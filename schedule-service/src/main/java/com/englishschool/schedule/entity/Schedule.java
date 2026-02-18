@@ -1,6 +1,6 @@
 package com.englishschool.schedule.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalTime;
 
 @Entity
