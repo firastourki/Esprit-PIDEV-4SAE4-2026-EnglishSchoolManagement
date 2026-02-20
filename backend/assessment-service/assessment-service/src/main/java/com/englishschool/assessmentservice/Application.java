@@ -1,4 +1,4 @@
-package com.englishschool.resourcesservice;
+package com.englishschool.assessmentservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
