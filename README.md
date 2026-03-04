@@ -1,4 +1,4 @@
-# English School Management - Task & Attendance Platform
+# English School Management - Schedule & Attendance
 
 ## Overview
 This project was developed as part of the **PIDEV - 4th Year Engineering Program** at **Esprit School of Engineering** (Academic Year 2025-2026).
@@ -37,3 +37,4 @@ Developed at **Esprit School of Engineering - Tunisia**
 ## Acknowledgments
 
 Special thanks to our project supervisors and teammates for their guidance and collaboration.
+
