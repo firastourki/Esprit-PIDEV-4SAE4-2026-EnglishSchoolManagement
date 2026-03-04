@@ -2,9 +2,11 @@ package com.englishschool.resourcesservice.service;
 
 import com.englishschool.resourcesservice.entity.LearningResource;
 import com.englishschool.resourcesservice.repository.LearningResourceRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.util.List;
 
 @Service
 public class LearningResourceService {
@@ -15,53 +17,62 @@ public class LearningResourceService {
         this.repository = repository;
     }
 
-    // CREATE
-    public LearningResource save(LearningResource resource) {
-        return repository.save(resource);
+    // ==========================
+    // UPLOAD
+    // ==========================
+    public void upload(String title,
+                       String type,
+                       boolean published,
+                       Long assessmentId,
+                       MultipartFile file) {
+
+        try {
+
+            if (file == null || file.isEmpty()) {
+                throw new RuntimeException("File is empty");
+            }
+
+            // ✅ Chemin corrigé
+            String uploadDir = new File("uploads").getAbsolutePath();
+            File dir = new File(uploadDir);
+
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            File destination = new File(dir, fileName);
+
+            file.transferTo(destination);
+
+            LearningResource resource = new LearningResource();
+            resource.setTitle(title);
+            resource.setType(type);
+            resource.setPublished(published);
+            resource.setAssessmentId(assessmentId);
+            resource.setFileUrl("uploads/" + fileName);
+
+            repository.save(resource);
+
+            System.out.println("UPLOAD SUCCESS");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("File upload failed", e);
+        }
     }
 
-    // GET ALL
-    public Page<LearningResource> getAll(Pageable pageable) {
-        return repository.findAll(pageable);
+    // ==========================
+    // GET BY ASSESSMENT
+    // ==========================
+    public List<LearningResource> getByAssessmentId(Long assessmentId) {
+        return repository.findByAssessmentId(assessmentId);
     }
 
-    // GET BY ID
-    public LearningResource findById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Resource not found"));
-    }
-
-    // UPDATE
-    public LearningResource update(Long id, LearningResource resource) {
-
-        LearningResource existing = findById(id);
-
-        existing.setTitle(resource.getTitle());
-        existing.setType(resource.getType());
-        existing.setLevel(resource.getLevel());
-        existing.setPublished(resource.isPublished());
-        existing.setFileUrl(resource.getFileUrl()); // ✅ CORRECT FIELD
-
-        return repository.save(existing);
-    }
-
+    // ==========================
     // DELETE
+    // ==========================
     public void delete(Long id) {
         repository.deleteById(id);
-    }
-
-    // SEARCH
-    public Page<LearningResource> search(String title, Pageable pageable) {
-        return repository.findByTitleContainingIgnoreCase(title, pageable);
-    }
-
-    // FILTER BY TYPE
-    public Page<LearningResource> filterByType(String type, Pageable pageable) {
-        return repository.findByType(type, pageable);
-    }
-
-    // FILTER BY PUBLISHED
-    public Page<LearningResource> filterByPublished(boolean published, Pageable pageable) {
-        return repository.findByPublished(published, pageable);
     }
 }

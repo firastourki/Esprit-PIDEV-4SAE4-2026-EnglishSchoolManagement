@@ -3,7 +3,6 @@ package com.englishschool.resourcesservice.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "learning_resource")
 public class LearningResource {
 
     @Id
@@ -11,74 +10,32 @@ public class LearningResource {
     private Long id;
 
     private String title;
-
     private String type;
-
-    private String courseName;   // ✅ IMPORTANT
-
-    private String level;
-
     private boolean published;
+    private Long assessmentId;
+    private String fileUrl;
 
-    private String fileUrl;      // ✅ IMPORTANT
+    public Long getId() { return id; }
 
-    // =============================
-    // GETTERS & SETTERS
-    // =============================
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getTitle() { return title; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getType() { return type; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public void setType(String type) { this.type = type; }
 
-    public String getType() {
-        return type;
-    }
+    public boolean isPublished() { return published; }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+    public void setPublished(boolean published) { this.published = published; }
 
-    public String getCourseName() {
-        return courseName;
-    }
+    public Long getAssessmentId() { return assessmentId; }
 
-    public void setCourseName(String courseName) {
-        this.courseName = courseName;
-    }
+    public void setAssessmentId(Long assessmentId) { this.assessmentId = assessmentId; }
 
-    public String getLevel() {
-        return level;
-    }
+    public String getFileUrl() { return fileUrl; }
 
-    public void setLevel(String level) {
-        this.level = level;
-    }
-
-    public boolean isPublished() {
-        return published;
-    }
-
-    public void setPublished(boolean published) {
-        this.published = published;
-    }
-
-    public String getFileUrl() {
-        return fileUrl;
-    }
-
-    public void setFileUrl(String fileUrl) {
-        this.fileUrl = fileUrl;
-    }
+    public void setFileUrl(String fileUrl) { this.fileUrl = fileUrl; }
 }
