@@ -14,7 +14,7 @@ It is a full-stack microservices application for managing an English language sc
 - **Frontend:** Angular 17, TypeScript, Tailwind CSS
 - **Backend:** Java 17, Spring Boot 3.2, Spring Cloud
 - **Service Discovery:** Netflix Eureka Server
-- **API Gateway:** Spring Cloud Gateway (To be implemented)
+- **API Gateway:** Runs on port `8080`, registers with Eureka and routes requests to services
 - **Database:** PostgreSQL / H2 (for development)
 - **Others:** Maven, Git, Docker
 
@@ -35,4 +35,5 @@ Developed at **Esprit School of Engineering - Tunisia**
 - **Rayen Karouch** - `rayen` branch - Attendance & Schedule CRUD, Frontend Integration.
 
 ## Acknowledgments
+
 Special thanks to our project supervisors and teammates for their guidance and collaboration.
