@@ -1,6 +1,0 @@
-com\englishschool\resourcesservice\repository\LearningResourceRepository.class
-com\englishschool\resourcesservice\Application.class
-com\englishschool\resourcesservice\controller\LearningResourceController.class
-com\englishschool\resourcesservice\service\LearningResourceService.class
-com\englishschool\resourcesservice\entity\LearningResource.class
-FileConfig.class
