@@ -1,0 +1,71 @@
+<div class="dashboard">
+  <h1>📊 School Overview</h1>
+
+  <!-- ── UPCOMING ALERTS ─────────────────────────────────────────────────── -->
+  <div *ngIf="upcomingAlerts.length > 0" class="alerts-section">
+    <div *ngFor="let alert of upcomingAlerts; let i = index"
+         class="alert-banner"
+         [ngClass]="alert.urgency === 'urgent' ? 'alert-urgent' : 'alert-soon'">
+      <div class="alert-left">
+        <span class="alert-icon">{{ alert.urgency === 'urgent' ? '🚨' : '🔔' }}</span>
+        <div class="alert-text">
+          <strong>{{ alert.title }}</strong>
+          <span class="alert-course">{{ alert.courseName }}</span>
+        </div>
+      </div>
+      <div class="alert-right">
+        <span class="alert-time">
+          {{ alert.urgency === 'urgent' ? '⚠️ In ' : '⏰ In ' }}
+          <strong>{{ alert.hoursLeft }}h</strong>
+        </span>
+        <button class="alert-dismiss" (click)="dismissAlert(i)" title="Dismiss">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STATS CARDS ─────────────────────────────────────────────────────── -->
+  <div class="stats-grid">
+    <div class="card">
+      <h3>👨‍🎓 Students</h3>
+      <p>{{ totalStudents }}</p>
+    </div>
+    <div class="card">
+      <h3>📚 Courses</h3>
+      <p>{{ totalCourses }}</p>
+    </div>
+    <div class="card">
+      <h3>📝 Assessments</h3>
+      <p>{{ totalAssessments }}</p>
+    </div>
+    <div class="card">
+      <h3>📁 Resources</h3>
+      <p>{{ totalResources }}</p>
+    </div>
+  </div>
+
+  <!-- ── QUICK ACTIONS ───────────────────────────────────────────────────── -->
+  <div class="quick-actions">
+    <h2>⚡ Quick Actions</h2>
+    <div class="actions-grid">
+      <a routerLink="/backoffice/assessments" class="action-btn">➕ Create Assessment</a>
+      <a routerLink="/backoffice/resources" class="action-btn secondary">📤 Manage Resources</a>
+      <a routerLink="/backoffice/planning" class="action-btn secondary">📅 View Planning</a>
+      <a routerLink="/backoffice/grades" class="action-btn grades">🏆 Manage Grades</a>
+    </div>
+  </div>
+
+  <!-- ── RECENT ACTIVITY ─────────────────────────────────────────────────── -->
+  <div class="recent-activity">
+    <h2>🕒 Recent Activity</h2>
+    <div *ngIf="recentActivity.length === 0" class="no-activity">
+      No recent activity
+    </div>
+    <ul *ngIf="recentActivity.length > 0">
+      <li *ngFor="let item of recentActivity" class="activity-item">
+        <span class="activity-icon">{{ item.icon }}</span>
+        <span class="activity-msg">{{ item.message }}</span>
+        <span class="activity-time">{{ item.time }}</span>
+      </li>
+    </ul>
+  </div>
+</div>
