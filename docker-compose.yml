@@ -107,17 +107,17 @@ services:
       context: ./resources-service
       dockerfile: docker/Dockerfile
     container_name: resources-service
-    restart: on-failure:3
+    restart: unless-stopped
     ports:
       - "8096:8096"
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_healthy        # ← waits for MySQL to be READY
       eureka-server:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: resources-service
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
@@ -129,17 +129,17 @@ services:
       context: ./assessment-service
       dockerfile: docker/Dockerfile
     container_name: assessment-service
-    restart: on-failure:3
+    restart: unless-stopped
     ports:
       - "8081:8081"
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_healthy        # ← waits for MySQL to be READY
       eureka-server:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: assessment-service
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
