@@ -20,7 +20,6 @@ services:
     networks:
       - esm-net
 
-
   # ── 2. MySQL ───────────────────────────────────────────────────────────────
   mysql:
     image: mysql:8
@@ -41,7 +40,6 @@ services:
       start_period: 30s
     networks:
       - esm-net
-
 
   # ── 3. Auth PostgreSQL ─────────────────────────────────────────────────────
   auth-db:
@@ -65,7 +63,6 @@ services:
     networks:
       - esm-net
 
-
   # ── 4. Enrollment PostgreSQL ───────────────────────────────────────────────
   enrollment-db:
     image: postgres:16-alpine
@@ -87,7 +84,6 @@ services:
       start_period: 20s
     networks:
       - esm-net
-
 
   # ── 5. Course PostgreSQL ───────────────────────────────────────────────────
   course-db:
@@ -111,8 +107,51 @@ services:
     networks:
       - esm-net
 
+  # ── 6. Attendance PostgreSQL ───────────────────────────────────────────────
+  attendance-db:
+    image: postgres:16-alpine
+    container_name: attendance-db
+    restart: unless-stopped
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_DB: attendance_db
+      POSTGRES_USER: esm
+      POSTGRES_PASSWORD: esmsecret
+    volumes:
+      - attendance-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esm -d attendance_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - esm-net
 
-  # ── 6. Auth Service ────────────────────────────────────────────────────────
+  # ── 7. Schedule PostgreSQL ─────────────────────────────────────────────────
+  schedule-db:
+    image: postgres:16-alpine
+    container_name: schedule-db
+    restart: unless-stopped
+    ports:
+      - "5437:5432"
+    environment:
+      POSTGRES_DB: schedule_db
+      POSTGRES_USER: esm
+      POSTGRES_PASSWORD: esmsecret
+    volumes:
+      - schedule-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esm -d schedule_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - esm-net
+
+  # ── 8. Auth Service ────────────────────────────────────────────────────────
   auth-service:
     build: ./esmauthms
     image: esm-auth-service:latest
@@ -139,6 +178,7 @@ services:
       EUREKA_CLIENT_FETCH_REGISTRY: "true"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: auth-service:1999
       EMAIL_SERVICE_URL: http://email-service:2001/api/emails/send
       APP_STORAGE_AVATAR_DIR: /app/avatars
     volumes:
@@ -146,8 +186,7 @@ services:
     networks:
       - esm-net
 
-
-  # ── 7. Resources Service ───────────────────────────────────────────────────
+  # ── 9. Resources Service ───────────────────────────────────────────────────
   resources-service:
     build:
       context: ./resources-service
@@ -163,6 +202,7 @@ services:
         condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: resources-service
+      SERVER_PORT: "8096"
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/english_school_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
@@ -173,11 +213,11 @@ services:
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_NONSECUREPORT: "8096"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: resources-service:8096
     networks:
       - esm-net
 
-
-  # ── 8. Assessment Service ──────────────────────────────────────────────────
+  # ── 10. Assessment Service ─────────────────────────────────────────────────
   assessment-service:
     build:
       context: ./assessment-service
@@ -203,6 +243,7 @@ services:
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_NONSECUREPORT: "8081"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: assessment-service:8081
       SPRING_MAIL_HOST: smtp.gmail.com
       SPRING_MAIL_PORT: "587"
       SPRING_MAIL_USERNAME: placeholder@gmail.com
@@ -212,8 +253,7 @@ services:
     networks:
       - esm-net
 
-
-  # ── 9. Payment Service ─────────────────────────────────────────────────────
+  # ── 11. Payment Service ────────────────────────────────────────────────────
   payment-service:
     build: ./payment_Microsevices
     container_name: payment-service
@@ -238,6 +278,7 @@ services:
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_NONSECUREPORT: "8083"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: payment-service:8083
       SPRING_MAIL_HOST: smtp.gmail.com
       SPRING_MAIL_PORT: "587"
       SPRING_MAIL_USERNAME: placeholder@gmail.com
@@ -247,8 +288,7 @@ services:
     networks:
       - esm-net
 
-
-  # ── 10. Reporting Service ──────────────────────────────────────────────────
+  # ── 12. Reporting Service ──────────────────────────────────────────────────
   reporting-service:
     build: ./reporting-service
     container_name: reporting-service
@@ -273,11 +313,11 @@ services:
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_NONSECUREPORT: "8085"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: reporting-service:8085
     networks:
       - esm-net
 
-
-  # ── 11. Enrollment Service ─────────────────────────────────────────────────
+  # ── 13. Enrollment Service ─────────────────────────────────────────────────
   enrollment-service:
     build: ./enrollment-service
     container_name: enrollment-service
@@ -308,12 +348,12 @@ services:
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_NONSECUREPORT: "8084"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: enrollment-service:8084
       COURSE_SERVICE_URL: http://course-service:8086
     networks:
       - esm-net
 
-
-  # ── 12. Course Service ─────────────────────────────────────────────────────
+  # ── 14. Course Service ─────────────────────────────────────────────────────
   course-service:
     build: ./course-service
     container_name: course-service
@@ -347,11 +387,77 @@ services:
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_NONSECUREPORT: "8086"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: course-service:8086
     networks:
       - esm-net
 
+  # ── 15. Attendance Service ─────────────────────────────────────────────────
+  attendance-service:
+    build: ./attendance-service
+    container_name: attendance-service
+    restart: unless-stopped
+    ports:
+      - "8087:8087"
+    depends_on:
+      attendance-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: attendance-service
+      SERVER_PORT: "8087"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://attendance-db:5432/attendance_db
+      SPRING_DATASOURCE_USERNAME: esm
+      SPRING_DATASOURCE_PASSWORD: esmsecret
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_H2_CONSOLE_ENABLED: "false"
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8087"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: attendance-service:8087
+    networks:
+      - esm-net
 
-  # ── 13. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
+  # ── 16. Schedule Service ───────────────────────────────────────────────────
+  schedule-service:
+    build: ./schedule-service
+    container_name: schedule-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    depends_on:
+      schedule-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: schedule-service
+      SERVER_PORT: "8082"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://schedule-db:5432/schedule_db
+      SPRING_DATASOURCE_USERNAME: esm
+      SPRING_DATASOURCE_PASSWORD: esmsecret
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_H2_CONSOLE_ENABLED: "false"
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8082"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+      EUREKA_INSTANCE_INSTANCE_ID: schedule-service:8082
+    networks:
+      - esm-net
+
+  # ── 17. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
   gateway-service:
     build: ./gateway-service
     container_name: gateway-service
@@ -375,14 +481,14 @@ services:
     networks:
       - esm-net
 
-
 volumes:
   mysql_data:
   auth-db-data:
   auth-avatars:
   enrollment-db-data:
   course-db-data:
-
+  attendance-db-data:
+  schedule-db-data:
 
 networks:
   esm-net:
