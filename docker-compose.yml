@@ -89,7 +89,30 @@ services:
       - esm-net
 
 
-  # ── 5. Auth Service ────────────────────────────────────────────────────────
+  # ── 5. Course PostgreSQL ───────────────────────────────────────────────────
+  course-db:
+    image: postgres:16-alpine
+    container_name: course-db
+    restart: unless-stopped
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: coursesdb
+      POSTGRES_USER: esm
+      POSTGRES_PASSWORD: esmsecret
+    volumes:
+      - course-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esm -d coursesdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - esm-net
+
+
+  # ── 6. Auth Service ────────────────────────────────────────────────────────
   auth-service:
     build: ./esmauthms
     image: esm-auth-service:latest
@@ -124,7 +147,7 @@ services:
       - esm-net
 
 
-  # ── 6. Resources Service ───────────────────────────────────────────────────
+  # ── 7. Resources Service ───────────────────────────────────────────────────
   resources-service:
     build:
       context: ./resources-service
@@ -154,7 +177,7 @@ services:
       - esm-net
 
 
-  # ── 7. Assessment Service ──────────────────────────────────────────────────
+  # ── 8. Assessment Service ──────────────────────────────────────────────────
   assessment-service:
     build:
       context: ./assessment-service
@@ -190,7 +213,7 @@ services:
       - esm-net
 
 
-  # ── 8. Payment Service ─────────────────────────────────────────────────────
+  # ── 9. Payment Service ─────────────────────────────────────────────────────
   payment-service:
     build: ./payment_Microsevices
     container_name: payment-service
@@ -225,7 +248,7 @@ services:
       - esm-net
 
 
-  # ── 9. Reporting Service ───────────────────────────────────────────────────
+  # ── 10. Reporting Service ──────────────────────────────────────────────────
   reporting-service:
     build: ./reporting-service
     container_name: reporting-service
@@ -254,7 +277,7 @@ services:
       - esm-net
 
 
-  # ── 10. Enrollment Service ─────────────────────────────────────────────────
+  # ── 11. Enrollment Service ─────────────────────────────────────────────────
   enrollment-service:
     build: ./enrollment-service
     container_name: enrollment-service
@@ -285,12 +308,50 @@ services:
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_NONSECUREPORT: "8084"
       EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
-      COURSE_SERVICE_URL: http://payment-service:8083
+      COURSE_SERVICE_URL: http://course-service:8086
     networks:
       - esm-net
 
 
-  # ── 11. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
+  # ── 12. Course Service ─────────────────────────────────────────────────────
+  course-service:
+    build: ./course-service
+    container_name: course-service
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    depends_on:
+      course-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: course-service
+      SERVER_PORT: "8086"
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://course-db:5432/coursesdb
+      SPRING_DATASOURCE_USERNAME: esm
+      SPRING_DATASOURCE_PASSWORD: esmsecret
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_H2_CONSOLE_ENABLED: "false"
+      SPRING_AUTOCONFIGURE_EXCLUDE: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      SPRING_SERVLET_MULTIPART_ENABLED: "true"
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 200MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 200MB
+      EUREKA_CLIENT_ENABLED: "true"
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "true"
+      EUREKA_CLIENT_FETCH_REGISTRY: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_NONSECUREPORT: "8086"
+      EUREKA_INSTANCE_NONSECUREPORTENABLED: "true"
+    networks:
+      - esm-net
+
+
+  # ── 13. Gateway Service (ALWAYS LAST) ──────────────────────────────────────
   gateway-service:
     build: ./gateway-service
     container_name: gateway-service
@@ -320,6 +381,8 @@ volumes:
   auth-db-data:
   auth-avatars:
   enrollment-db-data:
+  course-db-data:
+
 
 networks:
   esm-net:
